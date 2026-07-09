@@ -18,7 +18,7 @@ jobs:
     - name: Install devkitPro and tools
       run: |
         sudo apt-get update
-        sudo apt-get install -y GnuPG wget curl DEB-g++ git make zip unzip liblz4-tool
+        sudo apt-get install -y gnupg wget curl g++ git make zip unzip liblz4-tool
         # Set up devkitpro repositories
         sudo wget https://apt.devkitpro.org/install-devkitpro-pacman -O /usr/local/bin/install-devkitpro-pacman
         sudo chmod +x /usr/local/bin/install-devkitpro-pacman
