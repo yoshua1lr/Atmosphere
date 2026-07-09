@@ -1,0 +1,48 @@
+name: AutoBuild Atmosphere
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install devkitPro and tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y GnuPG wget curl DEB-g++ git make zip unzip liblz4-tool
+        # Set up devkitpro repositories
+        sudo wget https://apt.devkitpro.org/install-devkitpro-pacman -O /usr/local/bin/install-devkitpro-pacman
+        sudo chmod +x /usr/local/bin/install-devkitpro-pacman
+        sudo /usr/local/bin/install-devkitpro-pacman --noconfirm
+        # Install required Switch development packages
+        sudo /opt/devkitpro/pacman/bin/pacman -Syu --noconfirm switch-dev devkitA64 libnx
+
+    - name: Compile Atmosphere
+      run: |
+        export DEVKITPRO=/opt/devkitpro
+        export DEVKITARM=$DEVKITPRO/devkitARM
+        export DEVKITA64=$DEVKITPRO/devkitA64
+        make
+        
+    - name: Package Custom Firmware Build
+      run: |
+        mkdir -p out/atmosphere/contents
+        # Bundle the compiled components into a standard SD layout
+        cp -r out/* out/ || true 
+        cd out && zip -r ../atmosphere-custom-build.zip *
+
+    - name: Upload Finished Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Atmosphere-ZBIC-Fix
+        path: atmosphere-custom-build.zip
+        
